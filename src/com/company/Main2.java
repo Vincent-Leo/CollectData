@@ -114,8 +114,6 @@ public class Main2 {
         String reponseStr = EntityUtils.toString(verifyResponse.getEntity());
         System.out.println("check:" + reponseStr);
 
-        //For test
-
 //        //infoQueryServlet页面
 //        String queryResultUrl = "http://www.jsgsj.gov.cn:58888/province/infoQueryServlet.json?queryCinfo=true";
 //        HttpPost queryResultPost = new HttpPost(queryResultUrl);
