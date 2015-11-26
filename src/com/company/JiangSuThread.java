@@ -16,14 +16,27 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Main {
+public class JiangSuThread implements Runnable {
 
     private static final String FileRootPath = "C:/codes/jiangsu";
+    private static final long addNum = 100L;
+
+    private long startCompanyId;
+
+    public long getStartCompanyId() {
+        return startCompanyId;
+    }
+
+    public void setStartCompanyId(long startCompanyId) {
+        this.startCompanyId = startCompanyId;
+    }
 
     /**
      * 将验证码图片保存到本地
+     *
      * @param httpEntity
      * @param filename
      */
@@ -60,6 +73,7 @@ public class Main {
 
     /**
      * 识别验证码
+     *
      * @param httpclient
      * @return 验证码字符串
      */
@@ -96,11 +110,12 @@ public class Main {
 
     /**
      * 验证验证码
+     *
      * @param httpclient
      * @param capthca
-     * @return 正确返回true,错误返回false
+     * @return 正确返回true, 错误返回false
      */
-    public static Boolean checkCaptchaCode(CloseableHttpClient httpclient, String capthca) throws Exception{
+    public static Boolean checkCaptchaCode(CloseableHttpClient httpclient, String capthca) throws Exception {
         String verifyCaptchaUrl = "http://www.jsgsj.gov.cn:58888/province/infoQueryServlet.json?checkCode=true";
         HttpPost verifyCapthcaPost = new HttpPost(verifyCaptchaUrl);
         HttpResponse verifyResponse = null;
@@ -122,7 +137,7 @@ public class Main {
     /**
      * 获取httpclient
      */
-    public static CloseableHttpClient getHttpClient() throws Exception{
+    public static CloseableHttpClient getHttpClient() throws Exception {
         //第一次连接，获取cookie
         String url = "http://www.jsgsj.gov.cn:58888/province/";
         DefaultHttpClient client = new DefaultHttpClient(new PoolingClientConnectionManager());
@@ -137,52 +152,38 @@ public class Main {
         return httpclient;
     }
 
-    public static void main(String args[]) throws Exception {
+    public void run() {
+        try {
+            //获取带cookie的httpclient
+            CloseableHttpClient httpclient = getHttpClient();
 
-        new Timer().schedule(new TimerTask() {
-            public void run() {
-//                JiangSuThread dataThread = new JiangSuThread();
-//                dataThread.run();
-                System.out.println("hello");
+            for (long i = startCompanyId; i < startCompanyId + addNum; i++) {
+                String companyID = String.valueOf(i);
+                String org = null;
+                String id = null;
+                String seq_id = null;
+
+                //获取验证码
+                String capthca = getCaptchaCode(httpclient);
+                while (!checkCaptchaCode(httpclient, capthca)) {
+                    capthca = getCaptchaCode(httpclient);
+                }
+
+                //获取公司的org,id,seq_id信息,并存入数据库表，后期可以直接用这些信息查询公司数据，而不需要验证
+                String companyParams = PageInfoQueryServlet.getInfomation(httpclient, capthca, companyID);
+                if (companyParams != null) {
+                    String[] params = companyParams.split(",");
+                    org = params[0];
+                    id = params[1];
+                    seq_id = params[2];
+                }
+
+                if (org != null && id != null && seq_id != null) {
+                    PageCompanyData.getInfomation(httpclient, org, id, seq_id);
+                }
             }
-        }, 5000, 1000);
-
-//        JiangSuThread dataThread = new JiangSuThread();
-//        dataThread.run();
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //获取带cookie的httpclient
-        //CloseableHttpClient httpclient = getHttpClient();
-
-        //infoQueryServlet页面,用于获取org, id, seq_id信息
-//        for (long i = 320594000125222L; i < 320594000125922L; i++) {
-//            String fileName = "C:/codes/JiangSu.txt";
-//            String companyID = String.valueOf(i);
-//            //获取验证码
-//            String capthca = getCaptchaCode(httpclient);
-//            while (!checkCaptchaCode(httpclient, capthca)){
-//                capthca = getCaptchaCode(httpclient);
-//            }
-//            PageInfoQueryServlet.getInfomation(httpclient, capthca, companyID, fileName);
-//        }
-
-        //result页面
-        //PageCompanyBasic.getInfomation(httpclient, org, id, seq_id, name);
-
-        //Data页面
-        //PageCompanyData.getInfomation(httpclient, "1402", "29013092", "12");
-        //String dataResponse = "[{\"ORG\":1402,\"ID\":28801380,\"SEQ_ID\":49,\"C2\":\"苏州赛富科技有限公司\",\"C1\":\"320594000125222\",\"C3\":\"有限责任公司\\n\",\"ADMIT_MAIN\":\"08\",\"C7\":\"苏州工业园区星湖街218号生物纳米园C1组团B栋\",\"FARE_PLACE\":\"\",\"C6\":\"6196.1323万元人民币\",\"CAPI_TYPE_NAME\":\"人民币\",\"REG_CAPI_DOLLAR\":0,\"INVEST_CAPI\":\"0万元人民币\",\"INVEST_CAPI_DOLLAR\":0,\"C5\":\"高胜涛\",\"PARENT_CORP_NAME\":\"\",\"OPER_MAN_ADDR\":\"\",\"C9\":\"2008-09-28\",\"C10\":\"2058-09-26\",\"ABUITEM\":\"\",\"CBUITEM\":\"\",\"C8\":\"批发：预包装食品；汽车配件、计算机领域内的软硬件开发、技术咨询；从事货物和技术的进口业务；销售：计算机及配件、机电产品、仪器仪表、通信设备及相关产品、电子元器件、纺织原料及产品、化工原料、橡塑制品、五金工具、家用电器、钢材、木材、建材、燃料油、百货、珠宝首饰、家具及木制品、一类医疗器械、饲料、鲜活食用农产品；商务信息咨询、物流信息咨询、外包服务咨询、国际货运咨询；企业供应链管理及相关配套服务。（依法须经批准的项目，经相关部门批准后方可开展经营活动）\",\"C11\":\"江苏省苏州工业园区工商行政管理局\",\"HEAD_NAME\":\"\",\"FOREIGN_NAME\":\"\",\"SEND_CORP_REG_SITE\":\"\",\"C13\":\"在业\",\"CORP_OPERATE\":\"22\",\"C4\":\"2008-09-28\",\"WRITEOFF_DATE\":\"\",\"C12\":\"2015-01-21\",\"REVOKE_DATE\":\"\"}]";
-
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
