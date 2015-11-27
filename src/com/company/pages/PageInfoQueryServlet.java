@@ -18,9 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 public class PageInfoQueryServlet {
-    public static String getInfomation(CloseableHttpClient httpclient, String capthca, String companyID) throws Exception {
+    public static String getInfomation(CloseableHttpClient httpclient, String capthca, String companyID, String ip) throws Exception {
         String queryResultUrl = "http://www.jsgsj.gov.cn:58888/province/infoQueryServlet.json?queryCinfo=true";
         HttpPost queryResultPost = new HttpPost(queryResultUrl);
+        queryResultPost.addHeader("x-forwarded-for",ip);
         List<NameValuePair> queryResultList = new ArrayList<>();
         String org = null;
         String id = null;
@@ -47,11 +48,11 @@ public class PageInfoQueryServlet {
             saveToDataBase(companyID, org, id, seq_id);
 
             //将org等信息写入文件
-            BufferedWriter bw = null;
-            try {
-                File file = new File("C:/codes/JiangSu_log.txt");
-                if (!file.exists()) {
-                    file.createNewFile();
+                    BufferedWriter bw = null;
+                    try {
+                        File file = new File("C:/codes/JiangSu_log.txt");
+                        if (!file.exists()) {
+                            file.createNewFile();
                 }
                 FileWriter fw = new FileWriter(file, true);
                 bw = new BufferedWriter(fw);

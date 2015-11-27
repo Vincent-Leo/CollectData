@@ -6,14 +6,16 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PageCompanyBasic {
-    public static void getInfomation(CloseableHttpClient httpclient, String org, String id, String seq_id, String name) throws Exception {
+    public static void getInfomation(CloseableHttpClient httpclient, String org, String id, String seq_id, String name, String ip) throws Exception {
         String resultUrl = "http://www.jsgsj.gov.cn:58888/ecipplatform/inner_ci/ci_queryCorpInfor_gsRelease.jsp";
         HttpPost resultPost = new HttpPost(resultUrl);
+        resultPost.addHeader("x-forwarded-for",ip);
         List<NameValuePair> resultList = new ArrayList<>();
         resultList.add(new BasicNameValuePair("org", org));
         resultList.add(new BasicNameValuePair("id", id));
@@ -27,5 +29,6 @@ public class PageCompanyBasic {
         UrlEncodedFormEntity resultEntity = new UrlEncodedFormEntity(resultList, "UTF-8");
         resultPost.setEntity(resultEntity);
         HttpResponse resultResponse = httpclient.execute(resultPost);
+        System.out.println(EntityUtils.toString(resultResponse.getEntity()));
     }
 }

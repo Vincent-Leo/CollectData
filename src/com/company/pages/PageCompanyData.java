@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 public class PageCompanyData {
-    public static void getInfomation(CloseableHttpClient httpclient, String org, String id, String seq_id) throws Exception {
+    public static void getInfomation(CloseableHttpClient httpclient, String org, String id, String seq_id, String ip) throws Exception {
         String resultUrl = "http://www.jsgsj.gov.cn:58888/ecipplatform/ciServlet.json?ciEnter=true";
         HttpPost resultPost = new HttpPost(resultUrl);
+        resultPost.addHeader("x-forwarded-for", ip);
         List<NameValuePair> resultList = new ArrayList<>();
         resultList.add(new BasicNameValuePair("org", org));
         resultList.add(new BasicNameValuePair("id", id));

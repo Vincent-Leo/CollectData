@@ -1,4 +1,4 @@
-package com.company;
+package com.company.test;
 
 import com.company.ocr.OCR;
 import org.apache.http.HttpEntity;
