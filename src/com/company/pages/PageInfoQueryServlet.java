@@ -21,7 +21,7 @@ public class PageInfoQueryServlet {
     public static String getInfomation(CloseableHttpClient httpclient, String capthca, String companyID, String ip) throws Exception {
         String queryResultUrl = "http://www.jsgsj.gov.cn:58888/province/infoQueryServlet.json?queryCinfo=true";
         HttpPost queryResultPost = new HttpPost(queryResultUrl);
-        queryResultPost.addHeader("x-forwarded-for",ip);
+        queryResultPost.addHeader("x-forwarded-for", ip);
         List<NameValuePair> queryResultList = new ArrayList<>();
         String org = null;
         String id = null;
@@ -46,54 +46,8 @@ public class PageInfoQueryServlet {
             System.out.println("seq_id:" + seq_id);
             //存入数据库
             saveToDataBase(companyID, org, id, seq_id);
-
-            //将org等信息写入文件
-                    BufferedWriter bw = null;
-                    try {
-                        File file = new File("C:/codes/JiangSu_log.txt");
-                        if (!file.exists()) {
-                            file.createNewFile();
-                }
-                FileWriter fw = new FileWriter(file, true);
-                bw = new BufferedWriter(fw);
-                bw.write("companyID:" + companyID);
-                bw.write(",org:" + org);
-                bw.write(",id:" + id);
-                bw.write(",seq_id:" + seq_id);
-                bw.newLine();
-                bw.flush();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try{
-                    bw.close();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
             return org + "," + id + "," + seq_id;
         } else {
-            //将org等信息写入文件
-            BufferedWriter bw = null;
-            try {
-                File file = new File("C:/codes/JiangSu_log.txt");
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-                FileWriter fw = new FileWriter(file, true);
-                bw = new BufferedWriter(fw);
-                bw.write("companyID:" + companyID + " is invalid");
-                bw.newLine();
-                bw.flush();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try{
-                    bw.close();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
             return null;
         }
     }
